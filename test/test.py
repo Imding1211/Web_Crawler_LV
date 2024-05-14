@@ -23,10 +23,11 @@ def get_info(url):
     products_id_url_element = soup.select('a.lv-smart-link.lv-product-card__url')
     products_price_element = soup.select('span.notranslate')
     
-    products_id    = []
-    products_name  = []
-    products_price = []
-    products_url   = []
+    products_id      = []
+    products_name    = []
+    products_price   = []
+    products_url     = []
+    products_img_num = []
     
     for product_id_url_element, product_price_element in zip(products_id_url_element, products_price_element):
         
@@ -42,21 +43,21 @@ def get_info(url):
         product_url = home_page + product_id_url_element["href"]
         products_url.append(product_url)
         
-        screen_shot_img(product_url)
+        products_img_num.append(screen_shot_img(product_url))
         
         print(product_id, product_name, product_price, product_url)
         
-    return products_id, products_name, products_price, products_url
+    return products_id, products_name, products_price, products_url, products_img_num
 
 #=============================================================================#
 
 def screen_shot_img(url):
     
     product_id = url.split('/')[-1]
-    path = './Side Trunk/'+product_id
+    path = './image/side_trunk/' + product_id
     
     if not os.path.exists(path):
-        
+
         os.mkdir(path)
     
         driver = webdriver.Chrome()
@@ -70,11 +71,11 @@ def screen_shot_img(url):
     
         products_img_element = soup.select('div.lv-product-page-header__media img')
         
-        n = 0
+        img_num = 0
         
         for product_img_element in products_img_element:
             
-            n += 1
+            img_num += 1
             
             try:
                 img_url = product_img_element['srcset'].split(',')[0]
@@ -89,29 +90,38 @@ def screen_shot_img(url):
             screen_shot_driver = webdriver.Chrome()
             screen_shot_driver.implicitly_wait(3)
             screen_shot_driver.get(img_url)
-            screen_shot_driver.save_screenshot(path + '/' + product_id +'-' + str(n) + '.png')
+            screen_shot_driver.save_screenshot(path + '/' + product_id +'-' + str(img_num) + '.png')
             screen_shot_driver.quit()
             
-            print(f'Screen shot image {product_id}-{n}.')
+            print(f'Screen shot image {product_id}-{img_num}.')
+        
+        return img_num
     
     else:
+
         print(f'Image {product_id} already exist.')
+
+        return 0
 
 #=============================================================================#
 
-def convert_dict(product_data, country, products_id, products_name, products_price, products_url):
+def convert_dict(product_data, country, products_id, products_name, products_price, products_url, products_img_num):
 
-    for product_id, product_name, product_price, product_url in zip(products_id, products_name, products_price, products_url):
+    for product_id, product_name, product_price, product_url, product_img_num in zip(products_id, products_name, products_price, products_url, products_img_num):
         
         if product_id not in product_data:
+
             product_data[product_id] = {}
+
+            product_data[product_id]['img_num']      = product_img_num
+            product_data[product_id]['product_info'] = {}
             
         if country not in product_data[product_id]:
-            product_data[product_id][country] = {}
+            product_data[product_id]['product_info'][country] = {}
         
-        product_data[product_id][country]['Name']  = product_name
-        product_data[product_id][country]['Price'] = product_price
-        product_data[product_id][country]['url']   = product_url
+        product_data[product_id]['product_info'][country]['Name']  = product_name
+        product_data[product_id]['product_info'][country]['Price'] = product_price
+        product_data[product_id]['product_info'][country]['url']   = product_url
             
     return product_data
 
@@ -165,7 +175,7 @@ if __name__ == '__main__':
             'https://fr.louisvuitton.com/fra-fr/rechercher/Side%20Trunk',]
         
     countrys = ['Taiwan', 'Japan', 'Korean', 'Hong Kong', 'France']
-    
+
     heads = ['商品編號', '名稱', '有販售國家', '台灣', '日本', '韓國', '香港', '法國']
     
     product_data = {}
@@ -174,12 +184,12 @@ if __name__ == '__main__':
         
         print(f'{country} start~')
         
-        products_id, products_name, products_price, products_url = get_info(url)
+        products_id, products_name, products_price, products_url, products_img_num = get_info(url)
         
-        product_data = convert_dict(product_data, country, products_id, products_name, products_price, products_url)
+        product_data = convert_dict(product_data, country, products_id, products_name, products_price, products_url, products_img_num)
         
         print(f'{country} done!!')
         
-    ouput_excel(product_data, countrys, heads, 'lv side trunk.xlsx')
+    #ouput_excel(product_data, countrys, heads, 'lv side trunk.xlsx')
     
     ouput_json(product_data, 'product_data.json')
