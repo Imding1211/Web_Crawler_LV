@@ -1,13 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri May  3 00:19:18 2024
-
-@author: a0986
-"""
 
 from selenium import webdriver
 from bs4 import BeautifulSoup
-from dict_and_html import *
 import openpyxl
 import json
 import os
@@ -156,6 +149,13 @@ def ouput_excel(product_data, countrys, heads, excel_name):
     
 #=============================================================================#
 
+def ouput_json(product_data, json_name):
+
+    with open(json_name, 'w', encoding='utf-8') as file:
+        json.dump(product_data, file, ensure_ascii=False, indent=4)
+    
+#=============================================================================#
+
 if __name__ == '__main__':
     
     urls = ['https://tw.louisvuitton.com/zht-tw/search/Side%20Trunk',
@@ -182,11 +182,4 @@ if __name__ == '__main__':
         
     ouput_excel(product_data, countrys, heads, 'lv side trunk.xlsx')
     
-    with open('product_data.json', 'w', encoding='utf-8') as file:
-        json.dump(product_data, file, ensure_ascii=False, indent=4)
-    
-    output_filename = "example.htm"
-    output_html_table = dict_and_html(product_data)
-    with open(output_filename, 'w', encoding='utf-8') as filename:
-        for line in output_html_table.splitlines(keepends=True):
-            filename.write(line)
+    ouput_json(product_data, 'product_data.json')

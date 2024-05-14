@@ -1,13 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri May  3 00:19:18 2024
-
-@author: a0986
-"""
 
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import openpyxl
+import json
 import os
 
 #=============================================================================#
@@ -135,7 +130,7 @@ def ouput_excel(product_data, countrys, heads, excel_name):
         
         sheet.cell(index+2, 1).value = product_id
         
-        sheet.cell(index+2, 9).value = '、'.join(list(product_data[product_id]))
+        sheet.cell(index+2, 3).value = '、'.join(list(product_data[product_id]))
         
         for i, country in enumerate(countrys):
             
@@ -145,12 +140,19 @@ def ouput_excel(product_data, countrys, heads, excel_name):
                 
                 sheet.cell(index+2, 2).value = product_data[product_id][product_first_country]['Name']
                 
-                sheet.cell(index+2, i+10).value = product_data[product_id][country]['Price']
+                sheet.cell(index+2, i+4).value = product_data[product_id][country]['Price']
                 
-                sheet.cell(index+2, i+10).hyperlink = product_data[product_id][country]['url']
-                sheet.cell(index+2, i+10).style = "Hyperlink"
+                sheet.cell(index+2, i+4).hyperlink = product_data[product_id][country]['url']
+                sheet.cell(index+2, i+4).style = "Hyperlink"
     
     workbook.save(excel_name)
+    
+#=============================================================================#
+
+def ouput_json(product_data, json_name):
+
+    with open(json_name, 'w', encoding='utf-8') as file:
+        json.dump(product_data, file, ensure_ascii=False, indent=4)
     
 #=============================================================================#
 
@@ -164,7 +166,7 @@ if __name__ == '__main__':
         
     countrys = ['Taiwan', 'Japan', 'Korean', 'Hong Kong', 'France']
     
-    heads = ['商品編號', '名稱', '圖片一', '圖片二', '圖片三', '圖片四', '圖片五', '圖片六', '有販售國家', '台灣', '日本', '韓國', '香港', '法國']
+    heads = ['商品編號', '名稱', '有販售國家', '台灣', '日本', '韓國', '香港', '法國']
     
     product_data = {}
     
@@ -179,3 +181,5 @@ if __name__ == '__main__':
         print(f'{country} done!!')
         
     ouput_excel(product_data, countrys, heads, 'lv side trunk.xlsx')
+    
+    ouput_json(product_data, 'product_data.json')
