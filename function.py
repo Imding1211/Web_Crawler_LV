@@ -53,10 +53,10 @@ def get_info(url):
 def screen_shot_img(url):
     
     product_id = url.split('/')[-1]
-    path = './Side Trunk/'+product_id
+    path = './image/side_trunk/' + product_id
     
     if not os.path.exists(path):
-        
+
         os.mkdir(path)
     
         driver = webdriver.Chrome()
@@ -70,11 +70,11 @@ def screen_shot_img(url):
     
         products_img_element = soup.select('div.lv-product-page-header__media img')
         
-        n = 0
+        img_num = 0
         
         for product_img_element in products_img_element:
             
-            n += 1
+            img_num += 1
             
             try:
                 img_url = product_img_element['srcset'].split(',')[0]
@@ -89,11 +89,11 @@ def screen_shot_img(url):
             screen_shot_driver = webdriver.Chrome()
             screen_shot_driver.implicitly_wait(3)
             screen_shot_driver.get(img_url)
-            screen_shot_driver.save_screenshot(path + '/' + product_id +'-' + str(n) + '.png')
+            screen_shot_driver.save_screenshot(path + '/' + product_id +'-' + str(img_num) + '.png')
             screen_shot_driver.quit()
             
-            print(f'Screen shot image {product_id}-{n}.')
-    
+            print(f'Screen shot image {product_id}-{img_num}.')
+
     else:
         print(f'Image {product_id} already exist.')
 
@@ -104,20 +104,41 @@ def convert_dict(product_data, country, products_id, products_name, products_pri
     for product_id, product_name, product_price, product_url in zip(products_id, products_name, products_price, products_url):
         
         if product_id not in product_data:
+
             product_data[product_id] = {}
+
+            product_data[product_id]['img_num']      = count_img_num(product_id)
+            product_data[product_id]['product_info'] = {}
             
         if country not in product_data[product_id]:
-            product_data[product_id][country] = {}
+            product_data[product_id]['product_info'][country] = {}
         
-        product_data[product_id][country]['Name']  = product_name
-        product_data[product_id][country]['Price'] = product_price
-        product_data[product_id][country]['url']   = product_url
+        product_data[product_id]['product_info'][country]['Name']  = product_name
+        product_data[product_id]['product_info'][country]['Price'] = product_price
+        product_data[product_id]['product_info'][country]['url']   = product_url
             
     return product_data
 
 #=============================================================================#
 
-def ouput_excel(product_data, countrys, heads, excel_name):
+def count_img_num(product_id):
+
+    path = './image/side_trunk/' + product_id
+
+    file_num = 0
+
+    for lists in os.listdir(path):
+        sub_path = os.path.join(path, lists)
+        if os.path.isfile(sub_path):
+            file_num += 1
+
+    return file_num
+
+#=============================================================================#
+
+def ouput_excel(product_data, countrys, excel_name):
+
+    heads = ['商品編號', '名稱', '有販售國家', '台灣', '日本', '韓國', '香港', '法國']
     
     workbook = openpyxl.Workbook()
     
@@ -130,19 +151,19 @@ def ouput_excel(product_data, countrys, heads, excel_name):
         
         sheet.cell(index+2, 1).value = product_id
         
-        sheet.cell(index+2, 3).value = '、'.join(list(product_data[product_id]))
+        sheet.cell(index+2, 3).value = '、'.join(list(product_data[product_id]['product_info']))
         
         for i, country in enumerate(countrys):
             
-            if product_data[product_id].get(country) is not None:
+            if product_data[product_id]['product_info'].get(country) is not None:
                 
-                product_first_country = list(product_data[product_id])[0]
+                product_first_country = list(product_data[product_id]['product_info'])[0]
                 
-                sheet.cell(index+2, 2).value = product_data[product_id][product_first_country]['Name']
+                sheet.cell(index+2, 2).value = product_data[product_id]['product_info'][product_first_country]['Name']
                 
-                sheet.cell(index+2, i+4).value = product_data[product_id][country]['Price']
+                sheet.cell(index+2, i+4).value = product_data[product_id]['product_info'][country]['Price']
                 
-                sheet.cell(index+2, i+4).hyperlink = product_data[product_id][country]['url']
+                sheet.cell(index+2, i+4).hyperlink = product_data[product_id]['product_info'][country]['url']
                 sheet.cell(index+2, i+4).style = "Hyperlink"
     
     workbook.save(excel_name)
@@ -155,31 +176,3 @@ def ouput_json(product_data, json_name):
         json.dump(product_data, file, ensure_ascii=False, indent=4)
     
 #=============================================================================#
-
-if __name__ == '__main__':
-    
-    urls = ['https://tw.louisvuitton.com/zht-tw/search/Side%20Trunk',
-            'https://jp.louisvuitton.com/jpn-jp/search/Side%20Trunk',
-            'https://kr.louisvuitton.com/kor-kr/search/Side%20Trunk',
-            'https://hk.louisvuitton.com/eng-hk/search/Side%20Trunk',
-            'https://fr.louisvuitton.com/fra-fr/rechercher/Side%20Trunk',]
-        
-    countrys = ['Taiwan', 'Japan', 'Korean', 'Hong Kong', 'France']
-    
-    heads = ['商品編號', '名稱', '有販售國家', '台灣', '日本', '韓國', '香港', '法國']
-    
-    product_data = {}
-    
-    for url, country in zip(urls, countrys):
-        
-        print(f'{country} start~')
-        
-        products_id, products_name, products_price, products_url = get_info(url)
-        
-        product_data = convert_dict(product_data, country, products_id, products_name, products_price, products_url)
-        
-        print(f'{country} done!!')
-        
-    ouput_excel(product_data, countrys, heads, 'lv side trunk.xlsx')
-    
-    ouput_json(product_data, 'product_data.json')
