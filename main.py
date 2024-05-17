@@ -1,3 +1,4 @@
+
 from function import *
 
 urls = ['https://tw.louisvuitton.com/zht-tw/search/Side%20Trunk',
@@ -20,6 +21,8 @@ for url, country in zip(urls, countrys):
     
     print(f'{country} done!!')
     
-ouput_excel(product_data, countrys, 'lv side trunk.xlsx')
+generate_html(product_data)
 
-ouput_json(product_data, 'product_data.json')
+#ouput_excel(product_data, countrys, 'lv side trunk.xlsx')
+
+#ouput_json(product_data, 'product_data.json')

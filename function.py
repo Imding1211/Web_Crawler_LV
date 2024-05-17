@@ -136,6 +136,72 @@ def count_img_num(product_id):
 
 #=============================================================================#
 
+def generate_html(product_data):
+
+    headers = ['商品編號', '商品圖片','販售國家', '商品名稱', '商品價格', '商品連結']
+
+    with open('main.html', 'w') as html:
+        html.write('<!DOCTYPE html>\n')
+        html.write('<html lang="zh-hant-TW">\n')
+        html.write('<head>\n')
+        html.write('    <meta charset="UTF-8">\n')
+        html.write('    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n')
+        html.write('    <title>LV Side Trunk</title>\n')
+        html.write('    <style>\n')
+        html.write('        table {\n')
+        html.write('            width: 100%;\n')
+        html.write('            border-collapse: collapse;\n')
+        html.write('        }\n')
+        html.write('        th, td {\n')
+        html.write('            border: 1px solid black;\n')
+        html.write('            padding: 8px;\n')
+        html.write('            text-align: left;\n')
+        html.write('        }\n')
+        html.write('    </style>\n')
+        html.write('</head>\n')
+        html.write('<body>\n')
+        html.write('    <h1>LV Side Trunk</h1>\n')
+        html.write('    <table>\n')
+        html.write('        <thead>\n')
+        html.write('            <tr>\n')
+
+        for header in headers:
+            html.write(f'                <th scope="col">{header}</th>\n')
+
+        for product_id in product_data:
+            for index, product_country in enumerate(product_data[product_id]['product_info']):
+                html.write('            <tr>\n')
+
+                if index == 0 :
+                    html.write(f'                <th rowspan="{len(product_data[product_id]['product_info'])}">{product_id}</th>\n')
+                    html.write(f'                <td rowspan="{len(product_data[product_id]['product_info'])}">\n')
+
+                    for num in range(1, product_data[product_id]['img_num']+1):
+                        html.write(f'                    <img src="image/side_trunk/{product_id}/{product_id}-{num}.png" style="width:100px;">\n')
+
+                    html.write(f'                </td>\n')
+
+                html.write(f'                <td>{product_country}</td>\n')
+                html.write(f'                <td>{product_data[product_id]['product_info'][product_country]['Name']}</td>\n')
+                html.write(f'                <td>{product_data[product_id]['product_info'][product_country]['Price']}</td>\n')
+                html.write(f'                <td>\n')
+                html.write(f'                    <a href="{product_data[product_id]['product_info'][product_country]['url']}">Link</a>\n')
+                html.write(f'                </td>\n')
+                html.write('            </tr>\n')
+
+        html.write('            </tr>\n')
+        html.write('        </thead>\n')
+        html.write('        <tbody>\n')
+        html.write('            <tr>\n')
+        html.write('            </tr>\n')
+        html.write('        </tbody>\n')
+        html.write('    </table>\n')
+        html.write('</body>\n')
+        html.write('</html>\n')
+        html.write('')
+
+#=============================================================================#
+
 def ouput_excel(product_data, countrys, excel_name):
 
     heads = ['商品編號', '名稱', '有販售國家', '台灣', '日本', '韓國', '香港', '法國']
@@ -167,12 +233,12 @@ def ouput_excel(product_data, countrys, excel_name):
                 sheet.cell(index+2, i+4).style = "Hyperlink"
     
     workbook.save(excel_name)
-    
+
 #=============================================================================#
 
 def ouput_json(product_data, json_name):
 
     with open(json_name, 'w', encoding='utf-8') as file:
         json.dump(product_data, file, ensure_ascii=False, indent=4)
-    
+
 #=============================================================================#
