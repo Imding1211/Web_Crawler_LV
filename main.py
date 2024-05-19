@@ -21,7 +21,7 @@ for url, country in zip(urls, countrys):
 
     print(f'{country} done!!')
 
-generate_html(product_data)
+#generate_html(product_data)
 
 #ouput_excel(product_data, countrys, 'lv side trunk.xlsx')
 
