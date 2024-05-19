@@ -12,15 +12,15 @@ countrys = ['Taiwan', 'Japan', 'Korean', 'Hong Kong', 'France']
 product_data = {}
 
 for url, country in zip(urls, countrys):
-    
+
     print(f'{country} start~')
-    
+
     products_id, products_name, products_price, products_url = get_info(url)
-    
+
     product_data = convert_dict(product_data, country, products_id, products_name, products_price, products_url)
-    
+
     print(f'{country} done!!')
-    
+
 generate_html(product_data)
 
 #ouput_excel(product_data, countrys, 'lv side trunk.xlsx')

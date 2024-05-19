@@ -3,6 +3,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 import openpyxl
 import json
+import time
 import os
 
 #=============================================================================#
@@ -73,9 +74,7 @@ def screen_shot_img(url):
         img_num = 0
         
         for product_img_element in products_img_element:
-            
-            img_num += 1
-            
+
             try:
                 img_url = product_img_element['srcset'].split(',')[0]
                 
@@ -86,13 +85,16 @@ def screen_shot_img(url):
                 except:
                     break
             
-            screen_shot_driver = webdriver.Chrome()
-            screen_shot_driver.implicitly_wait(3)
-            screen_shot_driver.get(img_url)
-            screen_shot_driver.save_screenshot(path + '/' + product_id +'-' + str(img_num) + '.png')
-            screen_shot_driver.quit()
-            
-            print(f'Screen shot image {product_id}-{img_num}.')
+            if img_url[0:14] != 'https://player':
+                img_num += 1
+                screen_shot_driver = webdriver.Chrome()
+                screen_shot_driver.implicitly_wait(3)
+                screen_shot_driver.get(img_url)
+                time.sleep(1)
+                screen_shot_driver.save_screenshot(path + '/' + product_id +'-' + str(img_num) + '.png')
+                screen_shot_driver.quit()
+                
+                print(f'Screen shot image {product_id}-{img_num}.')
 
     else:
         print(f'Image {product_id} already exist.')
@@ -140,7 +142,7 @@ def generate_html(product_data):
 
     headers = ['商品編號', '商品圖片','販售國家', '商品名稱', '商品價格', '商品連結']
 
-    with open('main.html', 'w') as html:
+    with open('main.html', 'w', encoding="utf-8") as html:
         html.write('<!DOCTYPE html>\n')
         html.write('<html lang="zh-hant-TW">\n')
         html.write('<head>\n')
@@ -173,8 +175,8 @@ def generate_html(product_data):
                 html.write('            <tr>\n')
 
                 if index == 0 :
-                    html.write(f'                <th rowspan="{len(product_data[product_id]['product_info'])}">{product_id}</th>\n')
-                    html.write(f'                <td rowspan="{len(product_data[product_id]['product_info'])}">\n')
+                    html.write(f'                <th rowspan="{len(product_data[product_id]["product_info"])}">{product_id}</th>\n')
+                    html.write(f'                <td rowspan="{len(product_data[product_id]["product_info"])}">\n')
 
                     for num in range(1, product_data[product_id]['img_num']+1):
                         html.write(f'                    <img src="image/side_trunk/{product_id}/{product_id}-{num}.png" style="width:100px;">\n')
@@ -182,10 +184,10 @@ def generate_html(product_data):
                     html.write(f'                </td>\n')
 
                 html.write(f'                <td>{product_country}</td>\n')
-                html.write(f'                <td>{product_data[product_id]['product_info'][product_country]['Name']}</td>\n')
-                html.write(f'                <td>{product_data[product_id]['product_info'][product_country]['Price']}</td>\n')
+                html.write(f'                <td>{product_data[product_id]["product_info"][product_country]["Name"]}</td>\n')
+                html.write(f'                <td>{product_data[product_id]["product_info"][product_country]["Price"]}</td>\n')
                 html.write(f'                <td>\n')
-                html.write(f'                    <a href="{product_data[product_id]['product_info'][product_country]['url']}">Link</a>\n')
+                html.write(f'                    <a href="{product_data[product_id]["product_info"][product_country]["url"]}">Link</a>\n')
                 html.write(f'                </td>\n')
                 html.write('            </tr>\n')
 
